@@ -88,6 +88,15 @@ XXXXXXX
 
 ## Environment:
 ### Go to /AIProject-HoverLink/Environment
-You will see the environments currently used to simulate the test towers.
-XXXX
-XXXX
+This folder contains the PyBullet environments used to simulate the drone inspection task. The environments model electrical transmission towers, power lines, inspection targets, and terrain used for training and testing autonomous drone navigation algorithms.
+### Files
+#### drone_sim.py
+A basic PyBullet environment used to visualise the transmission tower inspection scenario. The environment contains:
+- Four transmission towers connected by power lines
+- Start and goal markers representing the inspection mission
+- A grass terrain area
+- Observation, reset, and step functions for future reinforcement learning integration
+- Camera positioning for viewing the inspection environment
+###To run:
+```bash
+python drone_sim.py
