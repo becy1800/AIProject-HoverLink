@@ -11,7 +11,7 @@ OBS = ObservationType('kin')
 ACT = ActionType('pid')
 
 # ── update this path after training ─────────────────────────
-MODEL_PATH = "results_tower/save-05.12.2026_16.24.50/best_model.zip"
+MODEL_PATH = "results_tower/save-05.12.2026_16.24.50/final_model.zip"
 
 
 def test_policy():
