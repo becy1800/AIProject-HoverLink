@@ -86,8 +86,8 @@ XXXXXXX
 XXXXXXX
 ```
 
-## Simulation_environment:
-### Go to /AIProject-HoverLink/Simulation_environment
+## Environment:
+### Go to /AIProject-HoverLink/Environment
 You will see the environments currently used to simulate the test towers.
 XXXX
 XXXX
