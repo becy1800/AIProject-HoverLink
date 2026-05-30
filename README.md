@@ -97,7 +97,6 @@ A basic PyBullet environment used to visualise the transmission tower inspection
 - A grass terrain area
 - Observation, reset, and step functions for future reinforcement learning integration
 - Camera positioning for viewing the inspection environment
-
-###To run:
+### To run:
 ```bash
 python drone_sim.py
