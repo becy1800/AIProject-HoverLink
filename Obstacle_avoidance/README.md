@@ -21,6 +21,21 @@ python evaluate.py --model models/checkpoints/drone_ppo_XXXXXX_steps \
 ```
 Replace `XXXXXX` with the checkpoint step number you want to test.
 
+**Best converged model (run this for the demo):**
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_2850000_steps \
+                   --vecnorm models/checkpoints/vec_normalize_2850000_steps.pkl
+```
+
+To evaluate without perception (obstacle avoidance only):
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_2850000_steps \
+                   --vecnorm models/checkpoints/vec_normalize_2850000_steps.pkl \
+                   --no-perception
+```
+
+
+
 ## Perception integration
 When the drone gets within 6m of the tower, Claudia's CNN activates and identifies the target location from the drone's camera. The deprojection converts the 2D image prediction to 3D world coordinates, refining the drone's navigation for the final approach.
 
