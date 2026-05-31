@@ -3,9 +3,11 @@ import cv2
 import csv
 import numpy as np 
 import pybullet as p 
+import sys
 
-# Import the environment to build it automatically
-import L_environment as lenv
+# Add the Environment folder to the python path so we can import drone_sim
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Environment')))
+import drone_sim as lenv
 
 print("Environment loaded. Generating dataset...")
 
