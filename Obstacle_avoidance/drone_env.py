@@ -47,7 +47,7 @@ class DroneInspectionEnv(gym.Env):
     CAM_NEAR = 0.1
     CAM_FAR  = 1000.0
 
-    def __init__(self, render_mode=None, max_episode_steps=1000, use_perception=False):
+    def __init__(self, render_mode=None, max_episode_steps=1000, use_perception=True):
         super().__init__()
         self.render_mode      = render_mode
         self.max_episode_steps = max_episode_steps
@@ -76,8 +76,8 @@ class DroneInspectionEnv(gym.Env):
         self.DT         = 1 / 240
 
         # ---------- goal & start ----------
-        self.start_pos  = np.array([1.0, 0.0, 0.3], dtype=np.float32)
-        self.target_pos = np.array([10.0, -0.9, 2.9], dtype=np.float32)  # fallback
+        self.start_pos    = np.array([1.0, 0.0, 0.3], dtype=np.float32)
+        self.target_pos   = None  # set by perception in reset()
         self.reach_radius = 0.5
 
         # ---------- perception model ----------
@@ -245,7 +245,8 @@ class DroneInspectionEnv(gym.Env):
         pos   = np.array(pos, dtype=np.float32)
         vel   = np.array(vel, dtype=np.float32)
         euler = np.array(p.getEulerFromQuaternion(orient_q), dtype=np.float32)
-        return np.concatenate([pos, vel, euler, (self.target_pos - pos).astype(np.float32)])
+        target = self.target_pos if self.target_pos is not None else pos
+        return np.concatenate([pos, vel, euler, (target - pos).astype(np.float32)])
 
     def _check_collision(self):
         cid = self._physics_client
@@ -272,11 +273,13 @@ class DroneInspectionEnv(gym.Env):
             self._drone_id, start.tolist(), [0, 0, 0, 1], physicsClientId=cid)
         p.resetBaseVelocity(self._drone_id, [0, 0, 0], [0, 0, 0], physicsClientId=cid)
 
-        # update target from perception; fall back to hardcoded if unavailable
+        # update target from perception each episode
         if self.use_perception:
             perceived = self._get_target_from_perception()
             if perceived is not None:
                 self.target_pos = perceived
+            elif self.target_pos is None:
+                print("[WARNING] Perception returned no target and no prior target exists.")
 
         return self._get_obs(), {}
 
