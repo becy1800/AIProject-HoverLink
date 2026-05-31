@@ -7,18 +7,23 @@ from stable_baselines3.common.monitor import Monitor
 from drone_env import DroneInspectionEnv
 
 
+TARGET_POS = [10.0, -0.9, 2.9]
+
+
 def make_eval_env(use_perception=True):
     env = DroneInspectionEnv(render_mode="human", max_episode_steps=1500,
-                             use_perception=use_perception)
+                             use_perception=use_perception,
+                             target_pos=None if use_perception else TARGET_POS)
     env = Monitor(env)
     return env
 
 
-def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5):
+def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5,
+             use_perception: bool = True):
     print(f"Loading model: {model_path}")
     model = PPO.load(model_path)
 
-    env = DummyVecEnv([lambda: make_eval_env(use_perception=True)])
+    env = DummyVecEnv([lambda: make_eval_env(use_perception=use_perception)])
 
     if vecnorm_path and __import__("os").path.exists(vecnorm_path):
         print(f"Loading VecNormalize stats: {vecnorm_path}")
@@ -43,11 +48,21 @@ def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5):
 
             if done[0]:
                 info_dict = info[0]
-                success = info_dict.get("reached_target", False)
-                dist    = info_dict.get("distance_to_target", float("inf"))
+                success   = info_dict.get("reached_target", False)
+                dist      = info_dict.get("distance_to_target", float("inf"))
+                collision = info_dict.get("collision", False)
+                oob       = info_dict.get("out_of_bounds", False)
+                if success:
+                    reason = "REACHED GOAL"
+                elif collision:
+                    reason = "COLLISION"
+                elif oob:
+                    reason = "OUT OF BOUNDS (hit ceiling/ground)"
+                else:
+                    reason = "TIMEOUT"
                 successes.append(int(success))
                 distances.append(dist)
-                print(f"  Episode {ep+1}: {'SUCCESS' if success else 'failed'} | "
+                print(f"  Episode {ep+1}: {reason} | "
                       f"steps={steps} | final_dist={dist:.2f}m | reward={ep_reward:.2f}")
 
     print(f"\nResults over {n_episodes} episodes:")
@@ -62,6 +77,8 @@ if __name__ == "__main__":
     parser.add_argument("--model",    default="models/best_model/best_model")
     parser.add_argument("--vecnorm",  default="models/vec_normalize.pkl")
     parser.add_argument("--episodes", type=int, default=5)
+    parser.add_argument("--no-perception", action="store_true")
     args = parser.parse_args()
 
-    evaluate(args.model, args.vecnorm, args.episodes)
+    evaluate(args.model, args.vecnorm, args.episodes,
+             use_perception=not args.no_perception)

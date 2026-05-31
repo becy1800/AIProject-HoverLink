@@ -75,6 +75,32 @@ def create_sphere(position, radius, color, physicsClientId=0):
     )
 
 
+def _visual_box(position, size, color, physicsClientId=0):
+    vis = p.createVisualShape(p.GEOM_BOX, halfExtents=[s/2 for s in size],
+                              rgbaColor=color, physicsClientId=physicsClientId)
+    p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1,
+                      baseVisualShapeIndex=vis, basePosition=position,
+                      physicsClientId=physicsClientId)
+
+
+def _visual_cylinder_between(start, end, radius, color, physicsClientId=0):
+    start, end = np.array(start), np.array(end)
+    mid = (start + end) / 2
+    direction = end - start
+    length = np.linalg.norm(direction)
+    z_axis = np.array([0, 0, 1])
+    dn = direction / length
+    axis = np.cross(z_axis, dn)
+    angle = math.acos(np.clip(np.dot(z_axis, dn), -1, 1))
+    orient = (0, 0, 0, 1) if np.linalg.norm(axis) < 1e-6 else \
+        p.getQuaternionFromAxisAngle((axis / np.linalg.norm(axis)).tolist(), angle)
+    vis = p.createVisualShape(p.GEOM_CYLINDER, radius=radius, length=length,
+                              rgbaColor=color, physicsClientId=physicsClientId)
+    p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1,
+                      baseVisualShapeIndex=vis, basePosition=mid.tolist(),
+                      baseOrientation=orient, physicsClientId=physicsClientId)
+
+
 def build_scene(physics_client, render_mode=None):
     """
     Build the transmission pole scene.
@@ -103,42 +129,42 @@ def build_scene(physics_client, render_mode=None):
     # ---------- Tower 1 (x=3) ----------
     obstacle_ids.append(create_cylinder_between(
         [tower_x, 0, 0], [tower_x, 0, tower_height], pole_radius, wood, physicsClientId=cid))
-    obstacle_ids.append(create_box(
-        [tower_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid))
-    obstacle_ids.append(create_box(
-        [tower_x, 0, tower_height + 0.18], [0.10, crossarm_length * 0.8, 0.08], brown, physicsClientId=cid))
-    obstacle_ids.append(create_cylinder_between(
+    _visual_box(
+        [tower_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid)
+    _visual_box(
+        [tower_x, 0, tower_height + 0.18], [0.10, crossarm_length * 0.8, 0.08], brown, physicsClientId=cid)
+    _visual_cylinder_between(
         [tower_x, 0, tower_height - 0.7], [tower_x, -crossarm_length / 2 + 0.3, tower_height],
-        0.035, brown, physicsClientId=cid))
-    obstacle_ids.append(create_cylinder_between(
+        0.035, brown, physicsClientId=cid)
+    _visual_cylinder_between(
         [tower_x, 0, tower_height - 0.7], [tower_x, crossarm_length / 2 - 0.3, tower_height],
-        0.035, brown, physicsClientId=cid))
+        0.035, brown, physicsClientId=cid)
 
     # ---------- Tower 2 (x=10) ----------
     obstacle_ids.append(create_cylinder_between(
         [tower2_x, 0, 0], [tower2_x, 0, tower_height], pole_radius, wood, physicsClientId=cid))
-    obstacle_ids.append(create_box(
-        [tower2_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid))
-    obstacle_ids.append(create_box(
-        [tower2_x, 0, tower_height + 0.18], [0.10, crossarm_length * 0.8, 0.08], brown, physicsClientId=cid))
-    obstacle_ids.append(create_cylinder_between(
+    _visual_box(
+        [tower2_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid)
+    _visual_box(
+        [tower2_x, 0, tower_height + 0.18], [0.10, crossarm_length * 0.8, 0.08], brown, physicsClientId=cid)
+    _visual_cylinder_between(
         [tower2_x, 0, tower_height - 0.7], [tower2_x, -crossarm_length / 2 + 0.3, tower_height],
-        0.035, brown, physicsClientId=cid))
-    obstacle_ids.append(create_cylinder_between(
+        0.035, brown, physicsClientId=cid)
+    _visual_cylinder_between(
         [tower2_x, 0, tower_height - 0.7], [tower2_x, crossarm_length / 2 - 0.3, tower_height],
-        0.035, brown, physicsClientId=cid))
+        0.035, brown, physicsClientId=cid)
 
     # ---------- Tower 3 (x=17) ----------
     obstacle_ids.append(create_cylinder_between(
         [tower3_x, 0, 0], [tower3_x, 0, tower_height], pole_radius, wood, physicsClientId=cid))
-    obstacle_ids.append(create_box(
-        [tower3_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid))
+    _visual_box(
+        [tower3_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid)
 
     # ---------- Tower 4 (x=-4) ----------
     obstacle_ids.append(create_cylinder_between(
         [tower4_x, 0, 0], [tower4_x, 0, tower_height], pole_radius, wood, physicsClientId=cid))
-    obstacle_ids.append(create_box(
-        [tower4_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid))
+    _visual_box(
+        [tower4_x, 0, tower_height], [0.15, crossarm_length, 0.12], brown, physicsClientId=cid)
 
     # ---------- Wires (towers 4-1, 1-2, 2-3) ----------
     for t1, t2 in [(tower4_x, tower_x), (tower_x, tower2_x), (tower2_x, tower3_x)]:
@@ -155,8 +181,11 @@ def build_scene(physics_client, render_mode=None):
     # ---------- Ground (visual only) ----------
     create_box([6.5, 0, 0.005], [30, 30, 0.02], [0.2, 0.7, 0.3, 1], physicsClientId=cid)
 
-    # ---------- Goal marker (visual only) ----------
-    p.createVisualShape(p.GEOM_SPHERE, radius=0.25, rgbaColor=[0, 1, 0, 0.5], physicsClientId=cid)
+    # ---------- Goal marker at target position (visual only) ----------
+    vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.5, rgbaColor=[0, 1, 0, 0.3], physicsClientId=cid)
+    p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1,
+                      baseVisualShapeIndex=vis, basePosition=[10.0, -0.9, 2.9],
+                      physicsClientId=cid)
 
     if render_mode == "human":
         p.addUserDebugText("GOAL",  [tower2_x, -0.9, 3.3],

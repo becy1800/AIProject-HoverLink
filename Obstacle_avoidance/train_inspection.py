@@ -3,7 +3,7 @@ import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import (
-    EvalCallback, CheckpointCallback, BaseCallback
+    EvalCallback, BaseCallback
 )
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import VecNormalize
@@ -13,6 +13,8 @@ from drone_env import DroneInspectionEnv
 # -----------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------
+TARGET_POS    = [10.0, -0.9, 2.9]   # tower 2 wire endpoint
+
 LOG_DIR       = "./logs/"
 MODEL_DIR     = "./models/"
 BEST_MODEL_PATH   = os.path.join(MODEL_DIR, "best_model")
@@ -51,7 +53,8 @@ class SuccessRateCallback(BaseCallback):
 # Build environments
 # -----------------------------------------------------------------------
 def make_env():
-    env = DroneInspectionEnv(render_mode=None, max_episode_steps=1000)
+    env = DroneInspectionEnv(render_mode=None, max_episode_steps=1000,
+                             use_perception=False, target_pos=TARGET_POS)
     env = Monitor(env)
     return env
 
@@ -71,13 +74,13 @@ def main():
         policy="MlpPolicy",
         env=train_env,
         learning_rate=3e-4,
-        n_steps=2048,
+        n_steps=4096,
         batch_size=256,
         n_epochs=10,
         gamma=0.99,
         gae_lambda=0.95,
         clip_range=0.2,
-        ent_coef=0.01,
+        ent_coef=0.02,
         vf_coef=0.5,
         max_grad_norm=0.5,
         policy_kwargs=dict(net_arch=[256, 256]),
@@ -96,10 +99,26 @@ def main():
         verbose=1,
     )
 
-    checkpoint_callback = CheckpointCallback(
+    class CheckpointWithVecNorm(BaseCallback):
+        def __init__(self, save_freq, save_path, vecnorm_env, verbose=1):
+            super().__init__(verbose)
+            self.save_freq = save_freq
+            self.save_path = save_path
+            self.vecnorm_env = vecnorm_env
+
+        def _on_step(self):
+            if self.n_calls % self.save_freq == 0:
+                steps = self.num_timesteps
+                self.model.save(os.path.join(self.save_path, f"drone_ppo_{steps}_steps"))
+                self.vecnorm_env.save(os.path.join(self.save_path, f"vec_normalize_{steps}_steps.pkl"))
+                if self.verbose:
+                    print(f"Saved checkpoint + vecnorm at {steps:,} steps")
+            return True
+
+    checkpoint_callback = CheckpointWithVecNorm(
         save_freq=max(50_000 // N_ENVS, 1),
         save_path=CHECKPOINT_PATH,
-        name_prefix="drone_ppo",
+        vecnorm_env=train_env,
         verbose=1,
     )
 

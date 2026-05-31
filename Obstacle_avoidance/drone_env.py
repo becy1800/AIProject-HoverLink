@@ -47,7 +47,8 @@ class DroneInspectionEnv(gym.Env):
     CAM_NEAR = 0.1
     CAM_FAR  = 1000.0
 
-    def __init__(self, render_mode=None, max_episode_steps=1000, use_perception=True):
+    def __init__(self, render_mode=None, max_episode_steps=1000, use_perception=True,
+                 target_pos=None):
         super().__init__()
         self.render_mode      = render_mode
         self.max_episode_steps = max_episode_steps
@@ -77,8 +78,9 @@ class DroneInspectionEnv(gym.Env):
 
         # ---------- goal & start ----------
         self.start_pos    = np.array([1.0, 0.0, 0.3], dtype=np.float32)
-        self.target_pos   = None  # set by perception in reset()
+        self.target_pos   = np.array(target_pos, dtype=np.float32) if target_pos is not None else None
         self.reach_radius = 0.5
+        self._prev_dist   = None
 
         # ---------- perception model ----------
         self._perception_model = None
@@ -273,6 +275,9 @@ class DroneInspectionEnv(gym.Env):
             self._drone_id, start.tolist(), [0, 0, 0, 1], physicsClientId=cid)
         p.resetBaseVelocity(self._drone_id, [0, 0, 0], [0, 0, 0], physicsClientId=cid)
 
+        if self.target_pos is not None:
+            self._prev_dist = float(np.linalg.norm(self.target_pos - start))
+
         # update target from perception each episode
         if self.use_perception:
             perceived = self._get_target_from_perception()
@@ -303,7 +308,7 @@ class DroneInspectionEnv(gym.Env):
         dist = np.linalg.norm(self.target_pos - pos)
 
         collided      = self._check_collision()
-        out_of_bounds = bool(pos[2] < 0.05 or np.any(np.abs(pos[:2]) > 25))
+        out_of_bounds = bool(pos[2] < 0.05 or pos[2] > 3.1 or np.any(np.abs(pos[:2]) > 25))
         reached       = bool(dist < self.reach_radius)
         roll, pitch   = obs[6], obs[7]
 
@@ -313,9 +318,12 @@ class DroneInspectionEnv(gym.Env):
         r_stability = -0.1 * (abs(roll) + abs(pitch))
         r_bounds    = -5.0 if out_of_bounds else 0.0
         r_smooth    = -0.001 * float(np.sum(action ** 2))
-        r_reach     = 200.0 if reached else 0.0
+        r_reach     = 600.0 if reached else 0.0
+        r_progress  = (self._prev_dist - dist) * 2.0 if self._prev_dist is not None else 0.0
+        r_time      = -0.15
+        self._prev_dist = float(dist)
 
-        reward     = r_goal + r_distance + r_collision + r_stability + r_bounds + r_smooth + r_reach
+        reward     = r_goal + r_distance + r_collision + r_stability + r_bounds + r_smooth + r_reach + r_progress + r_time
         terminated = reached or collided or out_of_bounds
         truncated  = self._step_count >= self.max_episode_steps
 
