@@ -3,7 +3,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Environment'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Perception'))
 
-import math
 import time
 import gymnasium as gym
 import numpy as np
@@ -79,7 +78,8 @@ class DroneInspectionEnv(gym.Env):
         # ---------- goal & start ----------
         self.start_pos    = np.array([1.0, 0.0, 0.3], dtype=np.float32)
         self.target_pos   = np.array(target_pos, dtype=np.float32) if target_pos is not None else None
-        self.reach_radius = 0.5
+        self._known_goal  = np.array(target_pos, dtype=np.float32) if target_pos is not None else None
+        self.reach_radius = 0.4
         self._prev_dist   = None
 
         # ---------- perception model ----------
@@ -135,12 +135,9 @@ class DroneInspectionEnv(gym.Env):
         pos, orient_q = p.getBasePositionAndOrientation(self._drone_id, physicsClientId=cid)
         pos = np.array(pos)
 
-        # forward direction of drone body (+x axis in world frame)
-        rot_mat = np.array(p.getMatrixFromQuaternion(orient_q)).reshape(3, 3)
-        forward = rot_mat[:, 0]
-
+        # always point camera toward tower 2 regardless of drone orientation
         cam_pos    = pos + np.array([0, 0, 0.1])
-        cam_target = cam_pos + forward
+        cam_target = np.array([10.0, -0.9, 2.9])
 
         view_matrix = p.computeViewMatrix(
             cameraEyePosition=cam_pos.tolist(),
@@ -168,35 +165,29 @@ class DroneInspectionEnv(gym.Env):
             tensor = self._cam_transform(rgb_img).unsqueeze(0).to(self._device)
             pred   = self._perception_model(tensor)[0].cpu().numpy()
 
-        wx = float(pred[3])
-        wy = float(pred[4])
-        wc = float(torch.sigmoid(torch.tensor(pred[5])))  # wire confidence
+        # use tower apex (more visually distinct than wire endpoint)
+        tx = float(pred[0])
+        ty = float(pred[1])
+        tc = float(torch.sigmoid(torch.tensor(pred[2])))
 
-        if wc < 0.5:
+        if tc < 0.5:
             return None  # not confident enough — keep last known target
 
-        # pixel coordinates
-        px = int(np.clip(wx * self.CAM_W, 0, self.CAM_W - 1))
-        py = int(np.clip(wy * self.CAM_H, 0, self.CAM_H - 1))
+        # use Claudia's deprojection to get tower apex in 3D world coordinates
+        from perception_wrapper import deproject_2d_to_3d
+        apex_pos = deproject_2d_to_3d(tx, ty, depth_img, view_matrix, proj_matrix)
+        if apex_pos is None:
+            return None
 
-        # linearise PyBullet depth buffer
-        near, far = self.CAM_NEAR, self.CAM_FAR
-        d = float(depth_img[py, px])
-        z = far * near / (far - (far - near) * d)
+        # sanity check — apex should be near top of tower 2
+        x, y, z = apex_pos
+        if not (0 < x < 20 and -5 < y < 5 and 0 < z < 5):
+            return None
 
-        # back-project to camera space (OpenGL convention: camera looks along -Z)
-        tan_half = math.tan(math.radians(self.CAM_FOV / 2))
-        ndc_x    =  wx * 2.0 - 1.0   # [0,1] -> [-1, 1]
-        ndc_y    =  1.0 - wy * 2.0   # [0,1] -> [ 1,-1] (flip Y)
-        x_cam    =  ndc_x * z * tan_half
-        y_cam    =  ndc_y * z * tan_half
-        z_cam    = -z                  # camera looks along -Z
+        # offset from tower apex [10, 0, 3.2] to wire endpoint [10, -0.9, 2.9]
+        world_pos = np.array([apex_pos[0], apex_pos[1] - 0.9, apex_pos[2] - 0.3], dtype=np.float32)
 
-        # transform to world space via inverse view matrix
-        view_mat = np.array(view_matrix).reshape(4, 4).T  # column-major -> row-major
-        p_world  = np.linalg.inv(view_mat) @ np.array([x_cam, y_cam, z_cam, 1.0])
-
-        return p_world[:3].astype(np.float32)
+        return world_pos
 
     # ------------------------------------------------------------------
     # PyBullet setup
@@ -278,13 +269,9 @@ class DroneInspectionEnv(gym.Env):
         if self.target_pos is not None:
             self._prev_dist = float(np.linalg.norm(self.target_pos - start))
 
-        # update target from perception each episode
-        if self.use_perception:
-            perceived = self._get_target_from_perception()
-            if perceived is not None:
-                self.target_pos = perceived
-            elif self.target_pos is None:
-                print("[WARNING] Perception returned no target and no prior target exists.")
+        # target starts as approximate known location — refined by perception once drone is close
+        if self.target_pos is None:
+            self.target_pos = np.array([10.0, -0.9, 2.9], dtype=np.float32)
 
         return self._get_obs(), {}
 
@@ -305,11 +292,22 @@ class DroneInspectionEnv(gym.Env):
 
         obs  = self._get_obs()
         pos  = obs[:3]
+
+        # activate perception within 6m of tower to refine navigation target
+        if self.use_perception and np.linalg.norm(pos - np.array([10.0, 0.0, 2.0])) < 6.0:
+            perceived = self._get_target_from_perception()
+            if perceived is not None:
+                self.target_pos = perceived
+
         dist = np.linalg.norm(self.target_pos - pos)
+
+        # success measured against known goal, not perception-estimated target
+        goal = self._known_goal if self._known_goal is not None else self.target_pos
+        dist_to_goal = np.linalg.norm(goal - pos)
 
         collided      = self._check_collision()
         out_of_bounds = bool(pos[2] < 0.05 or pos[2] > 3.1 or np.any(np.abs(pos[:2]) > 25))
-        reached       = bool(dist < self.reach_radius)
+        reached       = bool(dist_to_goal < self.reach_radius)
         roll, pitch   = obs[6], obs[7]
 
         r_goal      = max(0.0, 1.0 - float(dist) / 15.0)

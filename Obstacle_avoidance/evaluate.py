@@ -13,7 +13,7 @@ TARGET_POS = [10.0, -0.9, 2.9]
 def make_eval_env(use_perception=True):
     env = DroneInspectionEnv(render_mode="human", max_episode_steps=1500,
                              use_perception=use_perception,
-                             target_pos=None if use_perception else TARGET_POS)
+                             target_pos=TARGET_POS)
     env = Monitor(env)
     return env
 
