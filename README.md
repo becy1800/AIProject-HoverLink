@@ -62,15 +62,27 @@ python test_tower.py
 ```
 
 ## Obstacle_avoidance:
+Trains a drone using PPO reinforcement learning to navigate from a ground-level start position to an inspection point near the top of a transmission tower, avoiding poles and wires. A perception CNN activates during the final approach to visually locate the target from the drone's camera.
+
 ### Go to /AIProject-HoverLink/Obstacle_avoidance
 #### To train run:
 ```bash
 python train_inspection.py
 ```
 
-#### To test run:
+#### To test run (with perception):
 ```bash
-python evaluate.py --model models/best_model/best_model --vecnorm models/vec_normalize.pkl
+python evaluate.py --model models/checkpoints/drone_ppo_600000_steps --vecnorm models/checkpoints/vec_normalize_600000_steps.pkl
+```
+
+#### To test run (obstacle avoidance only, no perception):
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_600000_steps --vecnorm models/checkpoints/vec_normalize_600000_steps.pkl --no-perception
+```
+
+#### To view training progress:
+```bash
+tensorboard --logdir logs/
 ```
 
 
