@@ -3,3 +3,7 @@ pybullet
 stable-baselines3[extra]
 numpy
 tensorboard
+torch
+torchvision
+pandas
+opencv-python

@@ -75,15 +75,21 @@ python evaluate.py --model models/best_model/best_model --vecnorm models/vec_nor
 
 
 ## Perception:
-### Go to /AIProject-HoverLink/Perception
-#### To train run:
-```bash
-XXXXXXX
-```
+This module trains a Convolutional Neural Network (CNN) to detect the tower apex and wire endpoint from the drone's RGB camera images. The CNN outputs a structured target estimate consisting of predicted (x, y) coordinates and visibility confidence scores, which serves as the observation state for the PPO navigation policy.
 
-#### To test run:
+### Go to /AIProject-HoverLink/Perception
+### Files
+#### cnn_dataset_capture.py
+Captures RGB images from the drone's camera and generates a labeled dataset containing the exact coordinates and visibility of the tower and wires.
+#### To generate the training dataset:
 ```bash
-XXXXXXX
+python cnn_dataset_capture.py
+```
+#### train_cnn.py
+Trains a Convolutional Neural Network (CNN) using the captured dataset to predict target coordinates.
+#### To train the CNN model:
+```bash
+python train_cnn.py
 ```
 
 ## Environment:
