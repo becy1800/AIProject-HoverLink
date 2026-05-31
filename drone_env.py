@@ -238,7 +238,7 @@ class DroneInspectionEnv(gym.Env):
         dist = np.linalg.norm(self.target_pos - pos)
 
         # Rewards
-        r_goal      = float(np.exp(-dist ** 2))
+        r_goal      = max(0.0, 1.0 - float(dist) / 15.0)  # linear: 1.0 at goal, 0 at 15m
         r_distance  = -float(dist) * 0.01
         collided    = self._check_collision()
         r_collision = -5.0 if collided else 0.0
@@ -247,10 +247,11 @@ class DroneInspectionEnv(gym.Env):
         out_of_bounds = bool(pos[2] < 0.05 or np.any(np.abs(pos[:2]) > 25))
         r_bounds    = -5.0 if out_of_bounds else 0.0
         r_smooth    = -0.001 * float(np.sum(action ** 2))
+        reached     = bool(dist < self.reach_radius)
+        r_reach     = 200.0 if reached else 0.0
 
-        reward = r_goal + r_distance + r_collision + r_stability + r_bounds + r_smooth
+        reward = r_goal + r_distance + r_collision + r_stability + r_bounds + r_smooth + r_reach
 
-        reached    = bool(dist < self.reach_radius)
         terminated = reached or collided or out_of_bounds
         truncated  = self._step_count >= self.max_episode_steps
 

@@ -24,7 +24,7 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 os.makedirs(CHECKPOINT_PATH, exist_ok=True)
 
 N_ENVS          = 8          # parallel environments
-TOTAL_TIMESTEPS = 2_000_000
+TOTAL_TIMESTEPS = 5_000_000
 EVAL_FREQ       = 20_000
 N_EVAL_EPISODES = 5
 
@@ -77,7 +77,7 @@ def main():
         gamma=0.99,
         gae_lambda=0.95,
         clip_range=0.2,
-        ent_coef=0.005,
+        ent_coef=0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
         policy_kwargs=dict(net_arch=[256, 256]),
