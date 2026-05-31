@@ -23,8 +23,8 @@ Replace `XXXXXX` with the checkpoint step number you want to test.
 
 **Best converged model (run this for the demo):**
 ```bash
-python evaluate.py --model models/checkpoints/drone_ppo_2850000_steps \
-                   --vecnorm models/checkpoints/vec_normalize_2850000_steps.pkl
+python evaluate.py --model models/checkpoints/drone_ppo_600000_steps \
+                   --vecnorm models/checkpoints/vec_normalize_600000_steps.pkl
 ```
 
 To evaluate without perception (obstacle avoidance only):
