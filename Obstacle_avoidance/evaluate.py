@@ -7,8 +7,9 @@ from stable_baselines3.common.monitor import Monitor
 from drone_env import DroneInspectionEnv
 
 
-def make_eval_env():
-    env = DroneInspectionEnv(render_mode="human", max_episode_steps=1500)
+def make_eval_env(use_perception=True):
+    env = DroneInspectionEnv(render_mode="human", max_episode_steps=1500,
+                             use_perception=use_perception)
     env = Monitor(env)
     return env
 
@@ -17,7 +18,7 @@ def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5):
     print(f"Loading model: {model_path}")
     model = PPO.load(model_path)
 
-    env = DummyVecEnv([make_eval_env])
+    env = DummyVecEnv([lambda: make_eval_env(use_perception=True)])
 
     if vecnorm_path and __import__("os").path.exists(vecnorm_path):
         print(f"Loading VecNormalize stats: {vecnorm_path}")
