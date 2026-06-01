@@ -167,6 +167,7 @@ A visual PyBullet environment used to develop and preview the transmission tower
 ### To run:
 ```bash
 python drone_sim.py
+```
 
 #### drone_env.py
 A Gymnasium-based reinforcement learning environment that uses the transmission tower world created in `drone_sim.py` / `drone_sim_copy.py`.
