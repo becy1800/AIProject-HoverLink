@@ -155,15 +155,40 @@ python train_cnn.py
 
 ## Environment:
 ### Go to /AIProject-HoverLink/Environment
-This folder contains the PyBullet environments used to simulate the drone inspection task. The environments model electrical transmission towers, power lines, inspection targets, and terrain used for training and testing autonomous drone navigation algorithms.
+This folder contains the PyBullet world used to simulate the drone inspection task. The environment models electrical transmission towers, power lines, inspection targets, and terrain.
 ### Files
 #### drone_sim.py
-A basic PyBullet environment used to visualise the transmission tower inspection scenario. The environment contains:
+A visual PyBullet environment used to develop and preview the transmission tower inspection world. It includes:
 - Four transmission towers connected by power lines
-- Start and goal markers representing the inspection mission
-- A grass terrain area
-- Observation, reset, and step functions for future reinforcement learning integration
-- Camera positioning for viewing the inspection environment
+- Grass terrain
+- Start marker
+- Camera positioning for viewing the environment
+- Obstacle geometry used by the reinforcement learning environment
 ### To run:
 ```bash
 python drone_sim.py
+
+#### drone_env.py
+A Gymnasium-based reinforcement learning environment that uses the transmission tower world created in `drone_sim.py` / `drone_sim_copy.py`.
+
+This file extends the visual environment by:
+- Spawning a controllable drone within the PyBullet world
+- Defining the observation and action spaces used by Stable-Baselines3
+- Implementing the `reset()` and `step()` functions required for reinforcement learning
+- Calculating rewards based on progress towards inspection targets
+- Detecting collisions with towers, power lines, and the ground
+- Managing multiple inspection goals throughout evaluation
+- Supporting optional perception-based target detection using a CNN model
+
+The environment defines six inspection targets located on the transmission towers:
+- Tower 1 Left
+- Tower 1 Right
+- Tower 2 Left
+- Tower 2 Right
+- Tower 3 Left
+- Tower 3 Right
+
+During evaluation, the goal marker is updated to guide the drone towards each inspection location sequentially.
+Used by:
+- `train_inspection.py` for PPO training
+- `evaluate.py` for evaluating trained models
