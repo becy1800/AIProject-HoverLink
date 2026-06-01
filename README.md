@@ -91,6 +91,13 @@ Trains a Convolutional Neural Network (CNN) using the captured dataset to predic
 ```bash
 python train_cnn.py
 ```
+#### perception_wrapper.py
+Wraps the trained CNN model in a Gym-like interface so it can be used as an observation for the PPO policy.
+#### To use the wrapped CNN model:
+```bash
+python perception_wrapper.py
+```
+
 
 ## Environment:
 ### Go to /AIProject-HoverLink/Environment
