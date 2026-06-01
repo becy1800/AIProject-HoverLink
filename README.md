@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ## HOVER:
 ### Go to /AIProject-HoverLink/Hover
 
-Here, we use 
+Here, we use a Reinforcement Learning pipeline to train a drone to stabilise itself and achieve a hover using the PPO (Proximal Policy Optimisation) policy. Train.py uses 4 parallel stream PyBullet environment (HoverAviary). Train.py maps neural network actions to a high-level PID control space instead of motor RPMs. The architecture usescheckpoint-based learning, resuming from a PREVIOUS_MODEL save if detected and terminates early the moment an evaluation tracking callback clears a set success benchmark (TARGET_REWARD = 476.).
 #### To train run:
 ```bash
 python train.py
@@ -45,6 +45,7 @@ python train.py
 ```bash
 tensorboard --logdir results/save-05.11.2026_11.30.14/tb
 ```
+This script validates the trained policy by unpacking the saved final_model.zip and loading it directly into a 3D sim. As the drone flies, a dedicated logger monitors and logs real-time flight telemetry (including position coordinates, velocity, and orientation matrices) before compiling the metrics into automated performance charts (logger.plot()).
 #### To test run:
 ```bash
 python test.py
@@ -80,6 +81,27 @@ python evaluate.py --model models/checkpoints/drone_ppo_600000_steps --vecnorm m
 #### To test run (obstacle avoidance only, no perception):
 ```bash
 python evaluate.py --model models/checkpoints/drone_ppo_600000_steps --vecnorm models/checkpoints/vec_normalize_600000_steps.pkl --no-perception
+```
+
+#### To view training progress:
+```bash
+tensorboard --logdir logs/
+```
+
+### Go to /AIProject-HoverLink/Obstacle_avoidance_towers
+#### To train run:
+```bash
+python train_inspection.py
+```
+
+#### To test run (with perception):
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm models/checkpoints/vec_normalize_2200000_steps.pkl
+```
+
+#### To test run (obstacle avoidance only, no perception):
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm models/checkpoints/vec_normalize_2200000_steps.pkl --no-perception
 ```
 
 #### To view training progress:
