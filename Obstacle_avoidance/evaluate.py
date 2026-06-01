@@ -76,7 +76,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model",    default="models/best_model/best_model")
     parser.add_argument("--vecnorm",  default="models/vec_normalize.pkl")
-    parser.add_argument("--episodes", type=int, default=5)
+    parser.add_argument("--episodes", type=int, default=6)
     parser.add_argument("--no-perception", action="store_true")
     args = parser.parse_args()
 

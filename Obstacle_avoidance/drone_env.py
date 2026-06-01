@@ -10,7 +10,7 @@ import pybullet as p
 import pybullet_data
 from gymnasium import spaces
 
-from drone_sim import build_scene
+from drone_sim_copy import build_scene
 
 try:
     import torch
@@ -81,6 +81,20 @@ class DroneInspectionEnv(gym.Env):
         self._known_goal  = np.array(target_pos, dtype=np.float32) if target_pos is not None else None
         self.reach_radius = 0.4
         self._prev_dist   = None
+
+        self.goal_sequence = [
+            [-4.0, -1.6, 3.25],   # tower1_left
+            [-4.0,  1.6, 3.25],   # tower1_right
+            [ 3.0, -1.6, 3.25],   # tower2_left
+            [ 3.0,  1.6, 3.25],   # tower2_right
+            [10.0, -0.9, 2.9 ],   # tower3_left
+            [10.0,  1.6, 3.25],   # tower3_right
+        ]
+
+        self.current_goal_index = 0
+
+        self.target_pos = np.array(self.goal_sequence[self.current_goal_index], dtype=np.float32)
+        self._known_goal = self.target_pos.copy()
 
         # ---------- perception model ----------
         self._perception_model = None
@@ -213,8 +227,42 @@ class DroneInspectionEnv(gym.Env):
         p.setTimeStep(self.DT, physicsClientId=cid)
 
         self._obstacle_ids = build_scene(cid, self.render_mode)
+        self._add_goal_marker()
         self._spawn_drone()
-        
+
+    def _add_goal_marker(self):
+        cid = self._physics_client
+
+        if self.target_pos is None:
+            goal_pos = np.array([10.0, -0.9, 2.9], dtype=np.float32)
+        else:
+            goal_pos = self.target_pos
+
+        vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.25, rgbaColor=[1, 0, 0, 0.8], physicsClientId=cid)
+
+        #p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1, baseVisualShapeIndex=vis, basePosition=goal_pos.tolist(), physicsClientId=cid)
+        self._goal_marker_id = p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1, baseVisualShapeIndex=vis, basePosition=goal_pos.tolist(), physicsClientId=cid)
+
+        if self.render_mode == "human":
+            #p.addUserDebugText("GOAL", [goal_pos[0], goal_pos[1], goal_pos[2] + 0.4], textColorRGB=[1, 0, 0], textSize=1.4, physicsClientId=cid)
+            self._goal_text_id = p.addUserDebugText("GOAL", [goal_pos[0], goal_pos[1], goal_pos[2] + 0.4], textColorRGB=[1, 0, 0], textSize=1.4, physicsClientId=cid)
+
+    def _set_goal(self, goal_index):
+        cid = self._physics_client
+
+        self.current_goal_index = goal_index
+        self.target_pos = np.array(self.goal_sequence[self.current_goal_index], dtype=np.float32)
+        self._known_goal = self.target_pos.copy()
+
+        if hasattr(self, "_goal_marker_id"):
+            p.resetBasePositionAndOrientation(self._goal_marker_id, self.target_pos.tolist(), [0, 0, 0, 1], physicsClientId=cid)
+
+        if hasattr(self, "_goal_text_id"):
+            p.removeUserDebugItem(self._goal_text_id, physicsClientId=cid)
+
+        if self.render_mode == "human":
+            self._goal_text_id = p.addUserDebugText("GOAL", [self.target_pos[0], self.target_pos[1], self.target_pos[2] + 0.4], textColorRGB=[1, 0, 0], textSize=1.4, physicsClientId=cid)
+    
     def _spawn_drone(self):
         cid = self._physics_client
         try:
@@ -277,6 +325,21 @@ class DroneInspectionEnv(gym.Env):
         self._step_count = 0
         cid = self._physics_client
 
+        # Use one goal per episode, in order
+        if not hasattr(self, "_episode_goal_index"):
+            self._episode_goal_index = 0
+        else:
+            self._episode_goal_index += 1
+
+        # Stop at the final goal instead of skipping past it
+        if self._episode_goal_index >= len(self.goal_sequence):
+            self._episode_goal_index = len(self.goal_sequence) - 1
+
+        self._set_goal(self._episode_goal_index)
+
+        print("Current goal index:", self._episode_goal_index)
+        print("Current goal position:", self.target_pos)
+        
         rng    = np.random.default_rng(seed)
         jitter = rng.uniform(-0.3, 0.3, size=3).astype(np.float32)
         jitter[2] = abs(jitter[2])
@@ -288,10 +351,6 @@ class DroneInspectionEnv(gym.Env):
 
         if self.target_pos is not None:
             self._prev_dist = float(np.linalg.norm(self.target_pos - start))
-
-        # target starts as approximate known location — refined by perception once drone is close
-        if self.target_pos is None:
-            self.target_pos = np.array([10.0, -0.9, 2.9], dtype=np.float32)
 
         return self._get_obs(), {}
 
@@ -342,7 +401,9 @@ class DroneInspectionEnv(gym.Env):
         self._prev_dist = float(dist)
 
         reward     = r_goal + r_distance + r_collision + r_stability + r_bounds + r_smooth + r_reach + r_progress + r_time
+        
         terminated = reached or collided or out_of_bounds
+        
         truncated  = self._step_count >= self.max_episode_steps
 
         if self.render_mode == "human":
