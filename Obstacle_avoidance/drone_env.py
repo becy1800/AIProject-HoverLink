@@ -214,19 +214,39 @@ class DroneInspectionEnv(gym.Env):
 
         self._obstacle_ids = build_scene(cid, self.render_mode)
         self._spawn_drone()
-
+        
     def _spawn_drone(self):
         cid = self._physics_client
-        col = p.createCollisionShape(p.GEOM_SPHERE, radius=0.15, physicsClientId=cid)
-        vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.15,
-                                  rgbaColor=[0.2, 0.4, 1.0, 1.0], physicsClientId=cid)
-        self._drone_id = p.createMultiBody(
-            baseMass=self.MASS,
-            baseCollisionShapeIndex=col,
-            baseVisualShapeIndex=vis,
-            basePosition=self.start_pos.tolist(),
-            physicsClientId=cid,
-        )
+        try:
+            import pkg_resources
+            # Pulls the path where the pip package stores its custom assets
+            asset_path = pkg_resources.resource_filename('gym_pybullet_drones', 'assets')
+            cf2x_urdf_path = os.path.join(asset_path, "cf2x.urdf")
+            # cf2x_urdf_path = ""
+        except Exception:
+            cf2x_urdf_path = ""
+        if cf2x_urdf_path and os.path.exists(cf2x_urdf_path):
+            self._drone_id = p.loadURDF(
+                cf2x_urdf_path,
+                basePosition=self.start_pos.tolist(),
+                baseOrientation=[0, 0, 0, 1],
+                physicsClientId=cid
+            )
+            print(f"[INFO] Successfully loaded Crazyflie 2.x from: {cf2x_urdf_path}")
+            
+            # Explicitly scale up the base mass to match your obstacle environment parameters
+            p.changeDynamics(self._drone_id, -1, mass=self.MASS, physicsClientId=cid)
+        else:    
+            col = p.createCollisionShape(p.GEOM_SPHERE, radius=0.15, physicsClientId=cid)
+            vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.15,
+                                    rgbaColor=[0.2, 0.4, 1.0, 1.0], physicsClientId=cid)
+            self._drone_id = p.createMultiBody(
+                baseMass=self.MASS,
+                baseCollisionShapeIndex=col,
+                baseVisualShapeIndex=vis,
+                basePosition=self.start_pos.tolist(),
+                physicsClientId=cid,
+            )
         p.changeDynamics(self._drone_id, -1,
                          linearDamping=0.5, angularDamping=0.5,
                          physicsClientId=cid)
