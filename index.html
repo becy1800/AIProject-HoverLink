@@ -212,15 +212,41 @@
         </div>
         <!--/ Visual Effects. -->
 
+         <!-- Visual Effects. -->
+        <div class="column">
+          <div class="content">
+            <h2 class="title is-3">Hover Pipeline</h2>
+            <p>
+              The training pipeline begins in train.py where previous weights can be 
+              loaded to continue from a checkpoint. The environment is vectorised across multiple 
+              parallel instances to speed up data collection, with an eval callback monitoring 
+              performance throughout. Once the mean reward reaches the threshold of 476 the training 
+              stops and the best model is saved as a ZIP file. The saved model is then loaded in 
+              test.py for evaluation, which renders the drone in the 3D PyBullet GUI and 
+              logs telemetry data that can be visualised in TensorBoard.
+            </p>
+
+            <img src="./static/images/results/hoverPipeline.png" class="teaser-image" alt="Teaser." />
+          </div>
+        </div>
+
         <!-- Matting. -->
         <div class="column">
-          <h2 class="title is-3">DQN training</h2>
+          <h2 class="title is-3">PPO training</h2>
           <div class="columns is-centered">
             <div class="column content">
               <p>
-                Sample of the reward convergence plot of the DQN training.
+                Two training runs are compared above. PPO_9 (blue) trained on a single fixed goal at 
+                tower 2, while PPO_10 (pink) trained with all 8 goals randomised each episode. PPO_9 
+                converges faster and reaches a higher peak reward early on, which is expected given it 
+                only needs to learn one target location. PPO_10 takes longer to stabilise and shows more 
+                variance throughout, reflecting the added difficulty of generalising across all towers. 
+                However PPO_10 finishes with a higher smoothed reward of 756 compared to 627, suggesting 
+                that despite the harder training distribution the multi-goal agent ultimately learns a 
+                more robust navigation policy. The episode length drop after 1M steps in both runs 
+                indicates the agent learning to reach the goal faster rather than timing out.
               </p>
-              <img src="./static/images/results/reward_convergence_plot.png" class="teaser-image" alt="Teaser." />
+              <img src="./static/images/results/tensorboardFinal.png" class="teaser-image" alt="Teaser." />
             </div>
           </div>
         </div>
