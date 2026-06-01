@@ -182,7 +182,7 @@ def build_scene(physics_client, render_mode=None):
     create_box([6.5, 0, 0.005], [30, 30, 0.02], [0.2, 0.7, 0.3, 1], physicsClientId=cid)
 
     # ---------- Goal marker at target position (visual only) ----------
-    vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.1, rgbaColor=[1, 0, 0, 1], physicsClientId=cid) #reducing radius to 0.1, making it red.
+    vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.2, rgbaColor=[1, 0, 0, 1], physicsClientId=cid) #reducing radius to 0.2 from 0.5, making it red.
     p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1,
                       baseVisualShapeIndex=vis, basePosition=[10.0, -0.9, 2.9],
                       physicsClientId=cid)
