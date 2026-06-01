@@ -1,6 +1,6 @@
 # Hover Link - AI for Robotics - Final Project
 
-Welcome to the final project. Here we will be programming a drone with RL and PPO to fly from Point A to Point B.
+Welcome to the final project. HoverLink is about creating an autonmous drone that will fly from point A, the ground, to point B, the top of a transmission tower. The purpose of HoverLink is to create the first step towards generating an autonomous mission in wire repair of transmission towers, are very dangerous human activity. There has been interaction with manual controlled drones to carry wires to the top of transmission towers, which we are inspired by and implement an AI take on. We use PPO policy to train the drone to fly from point A to point B using PID control of the movement, as well as CNN perception to analyse the apex location of a tower. A simulated transmission tower is created to support this environment.
 
 
 ## Step 1: 
@@ -35,6 +35,8 @@ pip install -r requirements.txt
 
 ## HOVER:
 ### Go to /AIProject-HoverLink/Hover
+
+Here, we use 
 #### To train run:
 ```bash
 python train.py
