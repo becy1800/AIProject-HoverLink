@@ -111,7 +111,7 @@
         <h2 class="title is-3">Team members</h2>
         <div id="results-carousel" class="carousel results-carousel">
           <div class="item">
-            <img src="./static/images/staff/Raphael_Falque.jpg" class="teaser-image" alt="Teaser." />
+            <img src="./static/images/staff/headshot.jpg" class="teaser-image" alt="Teaser." />
           </div>
           <div class="item item-chair-tp">
             <img src="./static/images/staff/Lan_Wu.jpeg" class="teaser-image" alt="Teaser." />
@@ -121,12 +121,6 @@
           </div>
           <div class="item item-shiba">
             <img src="./static/images/staff/Dominik_Slomma.jpeg" class="teaser-image" alt="Teaser." />
-          </div>
-          <div class="item item-blueshirt">
-            <img src="./static/images/staff/Augustine_Le.jpeg" class="teaser-image" alt="Teaser." />
-          </div>
-          <div class="item item-mask">
-            <img src="./static/images/staff/Resul_Dagdanov.jpeg" class="teaser-image" alt="Teaser." />
           </div>
         </div>
       </div>
@@ -349,11 +343,34 @@
             <h3 class="title is-4">Environment — Louann</h3>
             <hr>
             <h4 class="title is-5">Overview</h4>
-            <p>The PPO et.</p>
+            <p>
+              The environment was developed in PyBullet to represent a simplified electrical transmission tower inspection task. 
+              It includes multiple transmission poles, crossarms, suspended power lines, grass terrain, and visual start/goal 
+              markers. This environment provided the base world used by the PPO navigation and obstacle avoidance systems, 
+              allowing the drone to train and evaluate its ability to fly from a ground-level start point to inspection targets 
+              near the tower structures.
+            </p>
+            <p>
+              The visual environment was first created as a standalone PyBullet scene, then integrated into <code>drone_env.py</code>, 
+              where it was extended with drone physics, collision checking, reward calculations, and multiple inspection goals. 
+              Six goal positions were defined across the tower structures so the drone could be tested on multi-goal navigation 
+              rather than only flying to a single fixed target.
+            </p>
             <h4 class="title is-5">Limitations</h4>
-            <p>The origel to d design.</p>
+            <p>
+              The environment is still a simplified representation of a real transmission tower site. Some structural details, 
+              such as braces and support beams, are visual-only or simplified to reduce training difficulty. The terrain is also 
+              flat and does not include environmental factors such as wind, uneven ground, lighting variation, or sensor noise. 
+              These simplifications made the reinforcement learning task more achievable, but they reduce the realism of the 
+              simulation compared with a real-world inspection scenario.
+            </p>
             <h4 class="title is-5">Future Work</h4>
-            <p>Training with t.</p>
+            <p>
+              Future work would involve making the environment more realistic by adding full collision geometry for all tower 
+              structures, more varied terrain, and additional inspection targets. A curriculum learning approach could be used, 
+              where the drone first trains in a simple version of the environment before gradually introducing more complex 
+              obstacles, tower details, and real-world disturbances.
+            </p>
           </div>
         </div>
       </div>
