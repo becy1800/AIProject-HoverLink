@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="description"
-        content="Sample portfolio for 41118 AI in robotics class at UTS.">
+        content="AI & Robotics Project - HoverLink">
   <meta name="keywords" content="41118">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>41118 Portfolio sample</title>
+  <title>AI & Robotics Project - HoverLink</title>
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
         rel="stylesheet">
@@ -33,19 +33,16 @@
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">41118 Portfolio sample</h1>
+          <h1 class="title is-1 publication-title">AI & Robotics Project - HoverLink</h1>
           <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="https://profiles.uts.edu.au/Raphael.Falque">Raphael Falque</a><sup>1</sup>,
-            </span>
-            <span class="author-block">
-              <a href="#">John Doe</a><sup>2</sup>
-            </span>
+            <span class="author-block">Rebecca Chedra,</span>
+            <span class="author-block">Claudia Wee,</span>
+            <span class="author-block">Sophie Vuillemin,</span>
+            <span class="author-block">Louann Mateo</span>
           </div>
 
           <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>1</sup>University Technology Sydney,</span>
-            <span class="author-block"><sup>2</sup>Other institute</span>
+            <span class="author-block">University of Technology Sydney</span>
           </div>
 
           <div class="column has-text-centered">
@@ -81,7 +78,7 @@
               </span>
               <!-- Code Link. -->
               <span class="link-block">
-                <a href="https://github.com/rFalque/41118_project-sample"
+                <a href="https://github.com/becy1800/AIProject-HoverLink"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fab fa-github"></i>
@@ -89,15 +86,6 @@
                   <span>Code</span>
                   </a>
               </span>
-              <!-- Dataset Link. -->
-              <span class="link-block">
-                <a href="https://github.com/rFalque/41118_project-sample/tree/main/data_sample"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="far fa-images"></i>
-                  </span>
-                  <span>Data</span>
-                  </a>
             </div>
 
           </div>
@@ -111,12 +99,9 @@
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
-      <img src="./static/images/teaser.png"
-            class="teaser-image"
-            alt="Teaser."/>
-      <h2 class="subtitle has-text-centered">
-        <span class="dnerf">41118 Portfolio teaser</span> sample of teaser image for your project. Note that this image is AI generated and does not reflect any flowchart of an actual framework. However, this text would be a great place to give a quick summary of your own flowchart.
-      </h2>
+      <video autoplay muted loop playsinline width="100%">
+        <source src="./static/videos/Drone_zinfra.mp4" type="video/mp4">
+      </video>
     </div>
   </div>
 </section>
@@ -264,15 +249,14 @@
         <h2 class="title is-3">Results discussion and reflection</h2>
 
         <div class="content has-text-justified">
-          <p>
-            <strong>Obstacle Avoidance (Rebecca):</strong> The PPO agent successfully learned to navigate from the start position to the tower inspection point, avoiding poles and wires along the way. The model converged and was able to reach the goal consistently, with the full perception pipeline integrated for the final approach.
-          </p>
-          <p>
-            <strong>Limitations:</strong> The perception CNN was trained on images from 4–8m distance at heights of 1.6–5.2m. From the drone's ground-level starting position the view falls outside this distribution, meaning perception can only reliably guide the final approach rather than the full flight. The model has also only been tested in a fixed known environment and has not been validated on unseen tower configurations.
-          </p>
-          <p>
-            <strong>Future Work:</strong> Retraining the perception CNN with images captured along the drone's actual flight trajectory would enable perception-guided navigation from the very start. A curriculum learning approach — gradually increasing scene complexity during training — could further improve robustness to unseen environments and real-world transfer.
-          </p>
+          <h3 class="title is-4">Obstacle Avoidance — Rebecca</h3>
+          <hr>
+          <h4 class="title is-5">Overview</h4>
+          <p>The PPO agent learned to navigate from the start position to the tower inspection point while avoiding poles and wires. The model converged successfully and reached the goal consistently. Perception was integrated for the final approach to the target.</p>
+          <h4 class="title is-5">Limitations</h4>
+          <p>The original environment included full tower detail with crossbeams, braces and support structures. This made training much harder. The drone would hesitate near the top of the tower and settle into a local optima instead of reaching the goal. Due to time constraints these elements were made visual only with no collision. This allowed the model to converge but is not the full intended design.</p>
+          <h4 class="title is-5">Future Work</h4>
+          <p>Training with the full tower structure as real obstacles would make the model more robust. A curriculum approach starting simple and gradually adding complexity would be the best way to achieve this. The perception system could also be improved by retraining the CNN on images from the drone's actual flight path so it can guide navigation from the very start.</p>
         </div>
       </div>
     </div>
