@@ -2,6 +2,8 @@
 
 Welcome to the final project. HoverLink is about creating an autonmous drone that will fly from point A, the ground, to point B, the top of a transmission tower. The purpose of HoverLink is to create the first step towards generating an autonomous mission in wire repair of transmission towers, are very dangerous human activity. There has been interaction with manual controlled drones to carry wires to the top of transmission towers, which we are inspired by and implement an AI take on. We use PPO policy to train the drone to fly from point A to point B using PID control of the movement, as well as CNN perception to analyse the apex location of a tower. A simulated transmission tower is created to support this environment.
 
+Access our website here:
+https://becy1800.github.io/AIProject-HoverLink/
 
 ## Step 1: 
 ### Create a Virtual Environment
@@ -89,6 +91,7 @@ tensorboard --logdir logs/
 ```
 
 ### Go to /AIProject-HoverLink/Obstacle_avoidance_towers
+This simply uses randomised goals form total 8 tower goals instead of only training on tower2 from /Obstacle_avoidance
 #### To train run:
 ```bash
 python train_inspection.py
@@ -108,7 +111,29 @@ python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm 
 ```bash
 tensorboard --logdir logs/
 ```
+### Go to /AIProject-HoverLink/Updating_goals
+This is related to /Obstacle_avoidance_towers, except it integrates the drone_sim_copy.py which no longer controls the manufacturing of a highlighted goal. Instead, it relies on trained, randomised data from /Obstacles_avoidance_towers, using the same evaluate.py and train_inspection.py, except the drone_env.py calls on a sequence of goals to appear. This means evaluate.py also follows the same sequence, making visual goal balls appear in order.
 
+#### To train run:
+```bash
+python train_inspection.py
+```
+
+#### To test run (with perception):
+HOWEVER - perception does not yet run cleanly for every goal. No perception is more smooth for this.
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm models/checkpoints/vec_normalize_2200000_steps.pkl
+```
+
+#### To test run (obstacle avoidance only, no perception):
+```bash
+python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm models/checkpoints/vec_normalize_2200000_steps.pkl --no-perception
+```
+
+#### To view training progress:
+```bash
+tensorboard --logdir logs/
+```
 
 ## Perception:
 This module trains a Convolutional Neural Network (CNN) to detect the tower apex and wire endpoint from the drone's RGB camera images. The CNN outputs a structured target estimate consisting of predicted (x, y) coordinates and visibility confidence scores, which serves as the observation state for the PPO navigation policy.
