@@ -117,7 +117,7 @@
             <img src="./static/images/staff/Lan_Wu.jpeg" class="teaser-image" alt="Teaser." />
           </div>
           <div class="item item-fullbody">
-            <img src="./static/images/staff/Hugh_Byun.jpeg" class="teaser-image" alt="Teaser." />
+            <img src="./static/images/staff/Sophie_V.png" class="teaser-image" alt="Teaser." />
           </div>
           <div class="item item-shiba">
             <img src="./static/images/staff/Dominik_Slomma.jpeg" class="teaser-image" alt="Teaser." />
@@ -274,6 +274,45 @@
               approach starting simple and gradually adding complexity would be the best way to achieve this. The
               perception system could also be improved by retraining the CNN on images from the drone's actual flight
               path so it can guide navigation from the very start.</p>
+          </div>
+
+          <div class="content has-text-justified">
+            <h3 class="title is-4">Navigation — Sophie</h3>
+            <hr>
+            <h4 class="title is-5">Overview</h4>
+            <p>The navigation task was split into two stages. The first was getting the drone to 
+              hover stably using a PPO agent trained with gravity compensation and damping, establishing 
+              a stable flight baseline. The second built on Rebecca's obstacle avoidance work by extending 
+              it to support multiple inspection goals across all four towers, rather than a single fixed 
+              target. This involved randomising the goal on every episode during training so the agent 
+              learned to navigate using the vector-to-target in its observation rather than memorising 
+              one specific location.</p>
+            <h4 class="title is-5">Limitations</h4>
+            <p>Early attempts controlled the drone using raw motor RPM values directly. This made 
+              learning extremely difficult as the agent had to discover the relationship between individual 
+              rotor speeds and stable flight from scratch, pid control led to much faster insights and flying ability.
+              Integrating Claudia's CNN perception also proved difficult, the perception system 
+              operates in a separate module and only produces a 2D image prediction, which must be 
+              deprojected back into 3D world coordinates before the agent can use it. Timing this correctly 
+              during the episode, handling low-confidence predictions, and ensuring the predicted 
+              target stayed consistent with the normalised observation space added complexity.</p>
+            <h4 class="title is-5">Future Work</h4>
+            <p>The drone currently spawns near a fixed start position. 
+              Fully randomising the spawn location each episode would force the agent to rely entirely 
+              on its observation to navigate, making it far more robust and realistic for real deployment. 
+              Training with the full tower collision geometry restored would also be a next step 
+              once spawn randomisation is stable.</p>
+          </div>
+
+          <div class="content has-text-justified">
+            <h3 class="title is-4">Environment — Louann</h3>
+            <hr>
+            <h4 class="title is-5">Overview</h4>
+            <p>The PPO et.</p>
+            <h4 class="title is-5">Limitations</h4>
+            <p>The origel to d design.</p>
+            <h4 class="title is-5">Future Work</h4>
+            <p>Training with t.</p>
           </div>
         </div>
       </div>
