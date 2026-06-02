@@ -170,39 +170,35 @@
                   frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
         -->
-        <div class="content has-text-centered">
-          <video id="replay-video"
-                  controls
-                  muted
-                  preload
-                  playsinline
-                  width="100%">
-            <source src="./static/videos/Video_Project.mp4"
-                    type="video/mp4">
-          </video>
-
-          <div style="margin-top: 6rem !important; padding-top: 2rem; text-align: center;">
-    
-            <!-- UPDATED: title changed to reflect final perception demo -->
-            <h2 class="title is-3">Multi-Goal Navigation with Perception</h2>
-
-            <!-- UPDATED: description updated to reflect 5-goal success with perception -->
-            <p style="font-size: 1rem; color: #4a4a4a; max-width: 750px; margin: 0 auto 2.5rem auto !important; line-height: 1.6;">
-              Final demonstration of the model successfully reaching 5 different inspection goals with perception enabled, using the CNN to visually localise the target during the final approach.
-            </p>
-
-            <!-- UPDATED: video replaced from perceptionOffNavigationAll.mp4 to PerceptionWorking.mp4 -->
-            <video id="perception-video" controls muted preload playsinline width="100%">
-              <source src="./static/videos/PerceptionWorking.mp4" type="video/mp4">
+          <div class="content has-text-centered">
+            <video id="replay-video" controls muted preload playsinline width="100%">
+              <source src="./static/videos/Video_Project.mp4" type="video/mp4">
             </video>
+
+            <div style="margin-top: 6rem !important; padding-top: 2rem; text-align: center;">
+
+              <!-- UPDATED: title changed to reflect final perception demo -->
+              <h2 class="title is-3">Multi-Goal Navigation with Perception</h2>
+
+              <!-- UPDATED: description updated to reflect 5-goal success with perception -->
+              <p
+                style="font-size: 1rem; color: #4a4a4a; max-width: 750px; margin: 0 auto 2.5rem auto !important; line-height: 1.6;">
+                Final demonstration of the model successfully reaching 5 different inspection goals with perception
+                enabled, using the CNN to visually localise the target during the final approach.
+              </p>
+
+              <!-- UPDATED: video replaced from perceptionOffNavigationAll.mp4 to PerceptionWorking.mp4 -->
+              <video id="perception-video" controls muted preload playsinline width="100%">
+                <source src="./static/videos/PerceptionWorking.mp4" type="video/mp4">
+              </video>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <!--/ Paper video. -->
+      <!--/ Paper video. -->
 
-  </div>
-</section>
+    </div>
+  </section>
 
 
   <section class="section">
@@ -215,7 +211,16 @@
           <div class="content">
             <h2 class="title is-3">CNN evaluation</h2>
             <p>
-              Confusion matrix of the CNN evaluation on the test set.
+              By randomising the drone's spatial coordinates and camera angles around the transmission towers in
+              PyBullet, it captures a diverse set of RGB and Depth images. Then, it calculates and stores the
+              ground-truth 2D pixel coordinates for the tower apex and wire endpoints. train_cnn.py handles the
+              training of a custom ResNet18 architecture. The model is evaluated on two primary metrics during training:
+              a regression loss (Mean Squared Error) used to accurately predict the (x, y) pixel coordinates of the
+              targets,
+              and a classification loss (Binary Cross-Entropy) to output a confidence score (c) indicating whether
+              the target is clearly visible in the frame. By monitoring the validation loss across epochs, the pipeline
+              ensures the model learns robust visual features without overfitting to the training distribution.
+              Finally, perception_wrapper.py deprojects the CNN's 2D prediction back into 3D world coordinates.
             </p>
 
             <img src="./static/images/results/confusion_matrix_seaborn.png" class="teaser-image" alt="Teaser." />
@@ -223,17 +228,17 @@
         </div>
         <!--/ Visual Effects. -->
 
-         <!-- Visual Effects. -->
+        <!-- Visual Effects. -->
         <div class="column">
           <div class="content">
             <h2 class="title is-3">Hover Pipeline</h2>
             <p>
-              The training pipeline begins in train.py where previous weights can be 
-              loaded to continue from a checkpoint. The environment is vectorised across multiple 
-              parallel instances to speed up data collection, with an eval callback monitoring 
-              performance throughout. Once the mean reward reaches the threshold of 476 the training 
-              stops and the best model is saved as a ZIP file. The saved model is then loaded in 
-              test.py for evaluation, which renders the drone in the 3D PyBullet GUI and 
+              The training pipeline begins in train.py where previous weights can be
+              loaded to continue from a checkpoint. The environment is vectorised across multiple
+              parallel instances to speed up data collection, with an eval callback monitoring
+              performance throughout. Once the mean reward reaches the threshold of 476 the training
+              stops and the best model is saved as a ZIP file. The saved model is then loaded in
+              test.py for evaluation, which renders the drone in the 3D PyBullet GUI and
               logs telemetry data that can be visualised in TensorBoard.
             </p>
 
@@ -247,14 +252,14 @@
           <div class="columns is-centered">
             <div class="column content">
               <p>
-                Two training runs are compared above. PPO_9 (blue) trained on a single fixed goal at 
-                tower 2, while PPO_10 (pink) trained with all 8 goals randomised each episode. PPO_9 
-                converges faster and reaches a higher peak reward early on, which is expected given it 
-                only needs to learn one target location. PPO_10 takes longer to stabilise and shows more 
-                variance throughout, reflecting the added difficulty of generalising across all towers. 
-                However PPO_10 finishes with a higher smoothed reward of 756 compared to 627, suggesting 
-                that despite the harder training distribution the multi-goal agent ultimately learns a 
-                more robust navigation policy. The episode length drop after 1M steps in both runs 
+                Two training runs are compared above. PPO_9 (blue) trained on a single fixed goal at
+                tower 2, while PPO_10 (pink) trained with all 8 goals randomised each episode. PPO_9
+                converges faster and reaches a higher peak reward early on, which is expected given it
+                only needs to learn one target location. PPO_10 takes longer to stabilise and shows more
+                variance throughout, reflecting the added difficulty of generalising across all towers.
+                However PPO_10 finishes with a higher smoothed reward of 756 compared to 627, suggesting
+                that despite the harder training distribution the multi-goal agent ultimately learns a
+                more robust navigation policy. The episode length drop after 1M steps in both runs
                 indicates the agent learning to reach the goal faster rather than timing out.
               </p>
               <img src="./static/images/results/tensorboardFinal.png" class="teaser-image" alt="Teaser." />
@@ -281,11 +286,14 @@
               projecting 3D targets into 2D coordinates. The trained model was integrated into the PPO navigation
               environment using a perception wrapper.</p>
             <h4 class="title is-5">Limitations</h4>
-            <p>The current perception pipeline relies on perfect depth information from PyBullet simulator to deproject
-              2D image coordinates back into 3D space. In a physical deployment, depth sensors can be noisy and have
-              blind spots. The dataset generation assumes the camera is roughly oriented towards the target area, the
-              model may lose confidence or fail to detect targets during erratic flight movements or extreme camera
-              angles not covered in the training distributions.</p>
+            <p>The current perception pipeline relies on perfect depth information from the PyBullet simulator, whereas
+              real-world depth sensors are often noisy and have limited outdoor range. Furthermore, integrating the
+              perception model into the continuous navigation environment revealed scaling issues. Initially, the
+              perception activation zones and the 2D-to-3D geometric offsets were tightly hardcoded to a single tower's
+              geometry. This caused the model to miss activation triggers or calculate incorrect target trajectories
+              when
+              attempting to generalize to multiple towers or when approaching from extreme camera angles at high speeds.
+            </p>
             <h4 class="title is-5">Future Work</h4>
             <p>To make the perception system more robust, we would need to collect real drone images of the tower from
               various angles, lighting and distances to capture the true variability of the real world. Additionally,
@@ -317,27 +325,27 @@
             <h3 class="title is-4">Navigation — Sophie</h3>
             <hr>
             <h4 class="title is-5">Overview</h4>
-            <p>The navigation task was split into two stages. The first was getting the drone to 
-              hover stably using a PPO agent trained with gravity compensation and damping, establishing 
-              a stable flight baseline. The second built on Rebecca's obstacle avoidance work by extending 
-              it to support multiple inspection goals across all four towers, rather than a single fixed 
-              target. This involved randomising the goal on every episode during training so the agent 
-              learned to navigate using the vector-to-target in its observation rather than memorising 
+            <p>The navigation task was split into two stages. The first was getting the drone to
+              hover stably using a PPO agent trained with gravity compensation and damping, establishing
+              a stable flight baseline. The second built on Rebecca's obstacle avoidance work by extending
+              it to support multiple inspection goals across all four towers, rather than a single fixed
+              target. This involved randomising the goal on every episode during training so the agent
+              learned to navigate using the vector-to-target in its observation rather than memorising
               one specific location.</p>
             <h4 class="title is-5">Limitations</h4>
-            <p>Early attempts controlled the drone using raw motor RPM values directly. This made 
-              learning extremely difficult as the agent had to discover the relationship between individual 
+            <p>Early attempts controlled the drone using raw motor RPM values directly. This made
+              learning extremely difficult as the agent had to discover the relationship between individual
               rotor speeds and stable flight from scratch, pid control led to much faster insights and flying ability.
-              Integrating Claudia's CNN perception also proved difficult, the perception system 
-              operates in a separate module and only produces a 2D image prediction, which must be 
-              deprojected back into 3D world coordinates before the agent can use it. Timing this correctly 
-              during the episode, handling low-confidence predictions, and ensuring the predicted 
+              Integrating Claudia's CNN perception also proved difficult, the perception system
+              operates in a separate module and only produces a 2D image prediction, which must be
+              deprojected back into 3D world coordinates before the agent can use it. Timing this correctly
+              during the episode, handling low-confidence predictions, and ensuring the predicted
               target stayed consistent with the normalised observation space added complexity.</p>
             <h4 class="title is-5">Future Work</h4>
-            <p>The drone currently spawns near a fixed start position. 
-              Fully randomising the spawn location each episode would force the agent to rely entirely 
-              on its observation to navigate, making it far more robust and realistic for real deployment. 
-              Training with the full tower collision geometry restored would also be a next step 
+            <p>The drone currently spawns near a fixed start position.
+              Fully randomising the spawn location each episode would force the agent to rely entirely
+              on its observation to navigate, making it far more robust and realistic for real deployment.
+              Training with the full tower collision geometry restored would also be a next step
               once spawn randomisation is stable.</p>
           </div>
 
@@ -346,31 +354,45 @@
             <hr>
             <h4 class="title is-5">Overview</h4>
             <p>
-              The environment was developed in PyBullet to represent a simplified electrical transmission tower inspection task. 
-              It includes multiple transmission poles, crossarms, suspended power lines, grass terrain, and visual start/goal 
-              markers. This environment provided the base world used by the PPO navigation and obstacle avoidance systems, 
-              allowing the drone to train and evaluate its ability to fly from a ground-level start point to inspection targets 
+              The environment was developed in PyBullet to represent a simplified electrical transmission tower
+              inspection task.
+              It includes multiple transmission poles, crossarms, suspended power lines, grass terrain, and visual
+              start/goal
+              markers. This environment provided the base world used by the PPO navigation and obstacle avoidance
+              systems,
+              allowing the drone to train and evaluate its ability to fly from a ground-level start point to inspection
+              targets
               near the tower structures.
             </p>
             <p>
-              The visual environment was first created as a standalone PyBullet scene, then integrated into <code>drone_env.py</code>, 
-              where it was extended with drone physics, collision checking, reward calculations, and multiple inspection goals. 
-              Six goal positions were defined across the tower structures so the drone could be tested on multi-goal navigation 
+              The visual environment was first created as a standalone PyBullet scene, then integrated into
+              <code>drone_env.py</code>,
+              where it was extended with drone physics, collision checking, reward calculations, and multiple inspection
+              goals.
+              Six goal positions were defined across the tower structures so the drone could be tested on multi-goal
+              navigation
               rather than only flying to a single fixed target.
             </p>
             <h4 class="title is-5">Limitations</h4>
             <p>
-              The environment is still a simplified representation of a real transmission tower site. Some structural details, 
-              such as braces and support beams, are visual-only or simplified to reduce training difficulty. The terrain is also 
-              flat and does not include environmental factors such as wind, uneven ground, lighting variation, or sensor noise. 
-              These simplifications made the reinforcement learning task more achievable, but they reduce the realism of the 
+              The environment is still a simplified representation of a real transmission tower site. Some structural
+              details,
+              such as braces and support beams, are visual-only or simplified to reduce training difficulty. The terrain
+              is also
+              flat and does not include environmental factors such as wind, uneven ground, lighting variation, or sensor
+              noise.
+              These simplifications made the reinforcement learning task more achievable, but they reduce the realism of
+              the
               simulation compared with a real-world inspection scenario.
             </p>
             <h4 class="title is-5">Future Work</h4>
             <p>
-              Future work would involve making the environment more realistic by adding full collision geometry for all tower 
-              structures, more varied terrain, and additional inspection targets. A curriculum learning approach could be used, 
-              where the drone first trains in a simple version of the environment before gradually introducing more complex 
+              Future work would involve making the environment more realistic by adding full collision geometry for all
+              tower
+              structures, more varied terrain, and additional inspection targets. A curriculum learning approach could
+              be used,
+              where the drone first trains in a simple version of the environment before gradually introducing more
+              complex
               obstacles, tower details, and real-world disturbances.
             </p>
           </div>
