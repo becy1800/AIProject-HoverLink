@@ -79,17 +79,16 @@ class DroneInspectionEnv(gym.Env):
         self.start_pos    = np.array([1.0, 0.0, 0.3], dtype=np.float32)
         self.target_pos   = np.array(target_pos, dtype=np.float32) if target_pos is not None else None
         self._known_goal  = np.array(target_pos, dtype=np.float32) if target_pos is not None else None
-        self.reach_radius = 0.6
+        self.reach_radius = 0.4
         self._prev_dist   = None
         self._perception_cooldown = 0 
 
         self.goal_sequence = [
-            [-4.0, -1.6, 3.25],   # tower1_left
-            [-4.0,  1.6, 3.25],   # tower1_right
-            [ 3.0, -1.6, 3.25],   # tower2_left
-            [ 3.0,  1.6, 3.25],   # tower2_right
-            [10.0, -0.9, 2.9 ],   # tower3_left
-            [10.0,  1.6, 3.25],   # tower3_right
+            [-4.0, -1.6, 2.9],   # tower4_left
+            [-4.0,  1.6, 2.9],   # tower4_right
+            [ 3.0, -1.6, 2.9],   # tower1_left
+            [10.0, -0.9, 2.9],   # tower2_left
+            [10.0,  1.6, 2.9],   # tower2_right
         ]
 
         self.current_goal_index = 0
@@ -185,13 +184,16 @@ class DroneInspectionEnv(gym.Env):
         if apex_pos is None:
             return None
 
-        # sanity check — covers all towers (tower4 at x=-4 through tower3 at x=17)
-        x, y, z = apex_pos
-        if not (-10 < x < 25 and -5 < y < 5 and 0 < z < 5):
+        apex_x, _, _ = apex_pos
+        if not (-10 < apex_x < 25):
             return None
 
-        # offset from tower apex to wire endpoint using current goal as reference
-        world_pos = np.array([apex_pos[0], apex_pos[1] - 0.9, apex_pos[2] - 0.3], dtype=np.float32)
+        # Use perceived tower x-position; keep known goal y and z which are fixed by design
+        world_pos = np.array([apex_x, self._known_goal[1], self._known_goal[2]], dtype=np.float32)
+
+        # Reject if perception estimate is implausibly far from the known goal
+        if np.linalg.norm(world_pos - self._known_goal) > 2.0:
+            return None
 
         return world_pos
 
@@ -230,7 +232,7 @@ class DroneInspectionEnv(gym.Env):
         else:
             goal_pos = self.target_pos
 
-        vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.25, rgbaColor=[1, 0, 0, 0.8], physicsClientId=cid)
+        vis = p.createVisualShape(p.GEOM_SPHERE, radius=0.4, rgbaColor=[1, 0, 0, 0.8], physicsClientId=cid)
 
         #p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1, baseVisualShapeIndex=vis, basePosition=goal_pos.tolist(), physicsClientId=cid)
         self._goal_marker_id = p.createMultiBody(baseMass=0, baseCollisionShapeIndex=-1, baseVisualShapeIndex=vis, basePosition=goal_pos.tolist(), physicsClientId=cid)
@@ -239,7 +241,7 @@ class DroneInspectionEnv(gym.Env):
             #p.addUserDebugText("GOAL", [goal_pos[0], goal_pos[1], goal_pos[2] + 0.4], textColorRGB=[1, 0, 0], textSize=1.4, physicsClientId=cid)
             self._goal_text_id = p.addUserDebugText("GOAL", [goal_pos[0], goal_pos[1], goal_pos[2] + 0.4], textColorRGB=[1, 0, 0], textSize=1.4, physicsClientId=cid)
 
-    def _set_goal(self, goal_index):
+    def set_goal(self, goal_index):
         cid = self._physics_client
 
         self.current_goal_index = goal_index
@@ -317,21 +319,6 @@ class DroneInspectionEnv(gym.Env):
         self._step_count = 0
         cid = self._physics_client
 
-        # Use one goal per episode, in order
-        if not hasattr(self, "_episode_goal_index"):
-            self._episode_goal_index = 0
-        else:
-            self._episode_goal_index += 1
-
-        # Stop at the final goal instead of skipping past it
-        if self._episode_goal_index >= len(self.goal_sequence):
-            self._episode_goal_index = len(self.goal_sequence) - 1
-
-        self._set_goal(self._episode_goal_index)
-
-        print("Current goal index:", self._episode_goal_index)
-        print("Current goal position:", self.target_pos)
-        
         rng    = np.random.default_rng(seed)
         jitter = rng.uniform(-0.3, 0.3, size=3).astype(np.float32)
         jitter[2] = abs(jitter[2])
@@ -375,7 +362,7 @@ class DroneInspectionEnv(gym.Env):
             dist_to_tower = np.linalg.norm(pos - tower_center)
             
             # trigger earlier (10m) and use cooldown so it fires every 10 steps
-            if dist_to_tower < 10.0 and self._perception_cooldown <= 0:
+            if dist_to_tower < 5.0 and self._perception_cooldown <= 0:
                 perceived = self._get_target_from_perception()
                 if perceived is not None:
                     self.target_pos = perceived
@@ -390,7 +377,7 @@ class DroneInspectionEnv(gym.Env):
         dist_to_goal = np.linalg.norm(goal - pos)
 
         collided      = self._check_collision()
-        out_of_bounds = bool(pos[2] < 0.05 or pos[2] > 3.1 or np.any(np.abs(pos[:2]) > 25))
+        out_of_bounds = bool(pos[2] < 0.05 or pos[2] > 3.75 or np.any(np.abs(pos[:2]) > 25))
         reached       = bool(dist_to_goal < self.reach_radius)
         roll, pitch   = obs[6], obs[7]
 

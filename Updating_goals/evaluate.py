@@ -26,8 +26,6 @@ TOWER_GOALS = {
 
 TARGET_POS = TOWER_GOALS["tower2_right"]  # default
 
-EVAL_TOLERANCE = 10
-
 
 def make_eval_env(use_perception=True):
     env = DroneInspectionEnv(render_mode="human", max_episode_steps=1000,
@@ -50,10 +48,17 @@ def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5,
         env.training = False
         env.norm_reward = False
 
+    n_goals = len(env.get_attr('goal_sequence')[0])
+
     successes = []
     distances = []
 
     for ep in range(n_episodes):
+        goal_idx = ep % n_goals
+        env.env_method('set_goal', goal_idx)
+        goal_pos = env.get_attr('target_pos')[0]
+        print(f"\n--- Episode {ep+1}: Goal {goal_idx} @ {goal_pos} ---")
+
         obs = env.reset()
         ep_reward = 0.0
         done = False
@@ -67,15 +72,14 @@ def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5,
 
             if done[0]:
                 info_dict = info[0]
-                # success   = info_dict.get("reached_target", False)
                 dist      = info_dict.get("distance_to_target", float("inf"))
+                reached   = info_dict.get("reached_target", False)
                 collision = info_dict.get("collision", False)
                 oob       = info_dict.get("out_of_bounds", False)
-                # if success:
-                #     reason = "REACHED GOAL"
-                if dist <= EVAL_TOLERANCE and not collision:
+                success   = False
+                if reached:
                     success = True
-                    reason = f"REACHED GOAL"
+                    reason = "REACHED GOAL"
                 elif collision:
                     reason = "COLLISION"
                 elif oob:
@@ -84,7 +88,7 @@ def evaluate(model_path: str, vecnorm_path: str, n_episodes: int = 5,
                     reason = "TIMEOUT"
                 successes.append(int(success))
                 distances.append(dist)
-                print(f"  Episode {ep+1}: {reason} | "
+                print(f"  Result: {reason} | "
                       f"steps={steps} | final_dist={dist:.2f}m | reward={ep_reward:.2f}")
 
     print(f"\nResults over {n_episodes} episodes:")
