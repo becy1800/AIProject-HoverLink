@@ -112,7 +112,7 @@ python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm 
 tensorboard --logdir logs/
 ```
 ### Go to /AIProject-HoverLink/Updating_goals
-This is the final navigation module. It extends `/Obstacle_avoidance_towers` with a sequential goal system — `drone_env.py` cycles through 5 unique inspection goals across the towers in order during evaluation, with a visual goal marker updating at each location. Perception runs cleanly for all 5 goals at the 3M step checkpoint, using the CNN to visually localise the target tower during the final approach.
+This is the final navigation module. It extends `/Obstacle_avoidance_towers` with a goal system where `drone_env.py` cycles through 5 unique inspection goals, each with a visual marker updating at each location. Perception runs cleanly for all 5 goals at the 3M step checkpoint using the CNN to localise the target tower during the final approach.
 
 #### To train run:
 ```bash
