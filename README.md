@@ -151,6 +151,12 @@ Trains a Convolutional Neural Network (CNN) using the captured dataset to predic
 ```bash
 python train_cnn.py
 ```
+#### perception_wrapper.py
+Wrapper to load the trained CNN model and use it to predict the target's 3D position from the drone's camera image.
+#### To run:
+```bash
+python perception_wrapper.py
+``` 
 
 ## Environment:
 ### Go to /AIProject-HoverLink/Environment
