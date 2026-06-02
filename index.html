@@ -111,10 +111,10 @@
         <h2 class="title is-3">Team members</h2>
         <div id="results-carousel" class="carousel results-carousel">
           <div class="item">
-            <img src="./static/images/staff/Raphael_Falque.jpg" class="teaser-image" alt="Teaser." />
+            <img src="./static/images/staff/Rebecca.jpg" class="teaser-image" alt="Teaser." />
           </div>
           <div class="item item-chair-tp">
-            <img src="./static/images/staff/Lan_Wu.jpeg" class="teaser-image" alt="Teaser." />
+            <img src="./static/images/staff/Claudia.jpg" class="teaser-image" alt="Teaser." />
           </div>
           <div class="item item-fullbody">
             <img src="./static/images/staff/Sophie_V.png" class="teaser-image" alt="Teaser." />
@@ -149,7 +149,8 @@
               complete autonomous inspection pipeline.
             </p>
             <p>
-              The video below shows the drone navigating the environment.
+              The demonstrations below show two stages of the system: obstacle avoidance with perception integrated
+              navigating to a single goal, and the final system navigating to 5 unique goal locations across the towers.
             </p>
           </div>
         </div>
@@ -159,7 +160,7 @@
       <!-- Paper video. -->
       <div class="columns is-centered has-text-centered">
         <div class="column is-full-width">
-          <h2 id="video" class="title is-3">Video</h2>
+          <h2 id="video" class="title is-3">Obstacle Avoidance — Single Goal Navigation</h2>
           <!-- 
         <p>
           As a youtube link:
@@ -182,16 +183,17 @@
 
           <div style="margin-top: 6rem !important; padding-top: 2rem; text-align: center;">
     
-            <p style="font-size: 1.5rem; font-weight: 600; color: #363636; margin-bottom: 1.25rem !important; line-height: 1.4;">
-              Multi-Goal Navigation without Perceptual Alignment
-            </p>
-            
+            <!-- UPDATED: title changed to reflect final perception demo -->
+            <h2 class="title is-3">Multi-Goal Navigation with Perception</h2>
+
+            <!-- UPDATED: description updated to reflect 5-goal success with perception -->
             <p style="font-size: 1rem; color: #4a4a4a; max-width: 750px; margin: 0 auto 2.5rem auto !important; line-height: 1.6;">
-              Demonstration of the model successfully achieving all navigation goals despite degraded or shifted perception (trained on a randomized goal dataset).
+              Final demonstration of the model successfully reaching 5 different inspection goals with perception enabled, using the CNN to visually localise the target during the final approach.
             </p>
 
+            <!-- UPDATED: video replaced from perceptionOffNavigationAll.mp4 to PerceptionWorking.mp4 -->
             <video id="perception-video" controls muted preload playsinline width="100%">
-              <source src="./static/videos/perceptionOffNavigationAll.mp4" type="video/mp4">
+              <source src="./static/videos/PerceptionWorking.mp4" type="video/mp4">
             </video>
           </div>
         </div>
@@ -380,17 +382,6 @@
   </section>
 
 
-  <section class="section" id="BibTeX">
-    <div class="container is-max-desktop content">
-      <h2 class="title">BibTeX</h2>
-      <pre><code>@article{park2021nerfies,
-  author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},
-  title     = {Nerfies: Deformable Neural Radiance Fields},
-  journal   = {ICCV},
-  year      = {2021},
-}</code></pre>
-    </div>
-  </section>
 
 
   <footer class="footer">
