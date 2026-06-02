@@ -1,6 +1,6 @@
 # Hover Link - AI for Robotics - Final Project
 
-Welcome to the final project. HoverLink is about creating an autonmous drone that will fly from point A, the ground, to point B, the top of a transmission tower. The purpose of HoverLink is to create the first step towards generating an autonomous mission in wire repair of transmission towers, are very dangerous human activity. There has been interaction with manual controlled drones to carry wires to the top of transmission towers, which we are inspired by and implement an AI take on. We use PPO policy to train the drone to fly from point A to point B using PID control of the movement, as well as CNN perception to analyse the apex location of a tower. A simulated transmission tower is created to support this environment.
+Welcome to the final project. HoverLink is about creating an autonomous drone that will fly from a ground-level start position to 5 unique inspection points across multiple transmission towers. The purpose of HoverLink is to create the first step towards generating an autonomous mission in wire repair of transmission towers, a very dangerous human activity. There has been interaction with manual controlled drones to carry wires to the top of transmission towers, which we are inspired by and implement an AI take on. We use PPO reinforcement learning to train the drone to navigate from the ground to each inspection goal, with CNN perception activating during the final approach to visually localise the target tower. A simulated transmission tower environment is created to support this.
 
 Access our website here:
 https://becy1800.github.io/AIProject-HoverLink/
@@ -112,7 +112,7 @@ python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm 
 tensorboard --logdir logs/
 ```
 ### Go to /AIProject-HoverLink/Updating_goals
-This is related to /Obstacle_avoidance_towers, except it integrates the drone_sim_copy.py which no longer controls the manufacturing of a highlighted goal. Instead, it relies on trained, randomised data from /Obstacles_avoidance_towers, using the same evaluate.py and train_inspection.py, except the drone_env.py calls on a sequence of goals to appear. This means evaluate.py also follows the same sequence, making visual goal balls appear in order.
+This is the final navigation module. It extends `/Obstacle_avoidance_towers` with a sequential goal system — `drone_env.py` cycles through 5 unique inspection goals across the towers in order during evaluation, with a visual goal marker updating at each location. Perception runs cleanly for all 5 goals at the 3M step checkpoint, using the CNN to visually localise the target tower during the final approach.
 
 #### To train run:
 ```bash
@@ -120,14 +120,13 @@ python train_inspection.py
 ```
 
 #### To test run (with perception):
-HOWEVER - perception does not yet run cleanly for every goal. No perception is more smooth for this.
 ```bash
-python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm models/checkpoints/vec_normalize_2200000_steps.pkl
+python evaluate.py --model models/checkpoints/drone_ppo_3000000_steps --vecnorm models/checkpoints/vec_normalize_3000000_steps.pkl --episodes 5
 ```
 
 #### To test run (obstacle avoidance only, no perception):
 ```bash
-python evaluate.py --model models/checkpoints/drone_ppo_2200000_steps --vecnorm models/checkpoints/vec_normalize_2200000_steps.pkl --no-perception
+python evaluate.py --model models/checkpoints/drone_ppo_3000000_steps --vecnorm models/checkpoints/vec_normalize_3000000_steps.pkl --episodes 5 --no-perception
 ```
 
 #### To view training progress:
@@ -136,7 +135,7 @@ tensorboard --logdir logs/
 ```
 
 ## Perception:
-This module trains a Convolutional Neural Network (CNN) to detect the tower apex and wire endpoint from the drone's RGB camera images. The CNN outputs a structured target estimate consisting of predicted (x, y) coordinates and visibility confidence scores, which serves as the observation state for the PPO navigation policy.
+This module trains a Convolutional Neural Network (CNN) to detect the tower apex from the drone's RGB camera images. During evaluation, the CNN activates when the drone is within 5m of the current goal and uses the predicted tower position to refine the navigation target for the final approach. The dataset covers all tower locations so perception works across all 5 inspection goals.
 
 ### Go to /AIProject-HoverLink/Perception
 ### Files
@@ -181,13 +180,12 @@ This file extends the visual environment by:
 - Managing multiple inspection goals throughout evaluation
 - Supporting optional perception-based target detection using a CNN model
 
-The environment defines six inspection targets located on the transmission towers:
+The environment defines five inspection targets located below the wire level (`z=2.9`) across the transmission towers:
+- Tower 4 Left
+- Tower 4 Right
 - Tower 1 Left
-- Tower 1 Right
 - Tower 2 Left
 - Tower 2 Right
-- Tower 3 Left
-- Tower 3 Right
 
 During evaluation, the goal marker is updated to guide the drone towards each inspection location sequentially.
 Used by:
